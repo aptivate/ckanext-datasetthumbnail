@@ -3,7 +3,7 @@ import ckan.plugins as plugins
 import ckan.plugins.toolkit as toolkit
 
 
-def thumbnail_url():
+def thumbnail_url(package):
     '''Returns the url of a thumbnail for a dataset. 
 
     Looks for a resource "thumbnail.png" in a dataset. 
@@ -19,6 +19,10 @@ def thumbnail_url():
     show_thumbnail = config.get('ckan.datasetthumbnail.show_thumbnail', False)
     if not show_thumbnail:
         return None
+
+    for resource in package['resources']:
+        if resource['name'] == "thumbnail.png":
+            return resource['url']
 
     return '/image-icon.png'
 
