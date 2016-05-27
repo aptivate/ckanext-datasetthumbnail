@@ -20,7 +20,7 @@ def thumbnail_url():
     if not show_thumbnail:
         return None
 
-    return 'http://www.aptivate.org/static/images/aptivate-logo.png'
+    return '/image-icon.png'
 
 
 
@@ -32,13 +32,12 @@ class DatasetthumbnailPlugin(plugins.SingletonPlugin):
 
 
     # IConfigurer
-
     def update_config(self, config_):
         toolkit.add_template_directory(config_, 'templates')
         toolkit.add_public_directory(config_, 'public')
         toolkit.add_resource('fanstatic', 'datasetthumbnail')
 
-        #ITemplateHelpers
+    #ITemplateHelpers
     def get_helpers(self):
         return {
             'thumbnail_url': thumbnail_url
