@@ -21,7 +21,8 @@ def thumbnail_url(package):
 
     :rtype: string
     '''
-    show_thumbnail = config.get('ckan.datasetthumbnail.show_thumbnail', False)
+    value = config.get('ckan.datasetthumbnail.show_thumbnail', False)
+    show_thumbnail = toolkit.asbool(value)
     thumbnail_width = config.get('ckan.datasetthumbnail.thumbnail_width', 140)
     thumbnail_height = config.get('ckan.datasetthumbnail.thumbnail_height', thumbnail_width)
 
