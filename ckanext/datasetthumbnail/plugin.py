@@ -1,6 +1,11 @@
+import cgi
 import pylons.config as config
 import ckan.plugins as plugins
 import ckan.plugins.toolkit as toolkit
+import requests
+import tempfile
+from PIL import Image
+from StringIO import StringIO
 
 
 def thumbnail_url(package):
@@ -17,6 +22,9 @@ def thumbnail_url(package):
     :rtype: string
     '''
     show_thumbnail = config.get('ckan.datasetthumbnail.show_thumbnail', False)
+    thumbnail_width = config.get('ckan.datasetthumbnail.thumbnail_width', 140)
+    thumbnail_height = config.get('ckan.datasetthumbnail.thumbnail_height', thumbnail_width)
+
     if not show_thumbnail:
         return None
 
@@ -24,9 +32,40 @@ def thumbnail_url(package):
         if resource['name'] == "thumbnail.png":
             return resource['url']
 
+    #if there's no thumbnail make one and add it to the dataset
+
+
+    for resource in package['resources']:
+        if resource['format'] == 'JPEG':
+
+            response = requests.get(resource['url'])
+            image = Image.open(StringIO(response.content))
+            image.thumbnail((thumbnail_width, thumbnail_height))
+
+            #fp = StringIO() #create an in-memory file object in which to save the thumbnail image
+            fp = tempfile.NamedTemporaryFile()
+            image.save(fp, 'PNG')
+
+            thumbnail_resource = {}
+            thumbnail_resource['package_id'] = package['id']
+            thumbnail_resource['url'] = 'thumbnail.png'
+            thumbnail_resource['url_type'] = 'upload'
+            thumbnail_resource['format'] = 'png'
+            thumbnail_resource['name'] = 'thumbnail.png'
+            thumbnail_resource['upload'] = _UploadLocalFileStorage(fp)
+       
+            created_resource = toolkit.get_action('resource_create')(data_dict=thumbnail_resource)
+            fp.close()
+            return created_resource['url']
+
     return '/image-icon.png'
 
 
+class _UploadLocalFileStorage(cgi.FieldStorage):
+    def __init__(self, fp, *args, **kwargs):
+        self.name = fp.name
+        self.filename = fp.name
+        self.file = fp
 
 
 
