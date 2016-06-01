@@ -5,6 +5,7 @@ import ckan.plugins.toolkit as toolkit
 import requests
 import tempfile
 from PIL import Image
+from PIL import PngImagePlugin, JpegImagePlugin
 from StringIO import StringIO
 
 
