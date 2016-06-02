@@ -9,7 +9,7 @@ from PIL import PngImagePlugin, JpegImagePlugin
 from StringIO import StringIO
 
 
-def thumbnail_url(package):
+def thumbnail_url(package_id):
     '''Returns the url of a thumbnail for a dataset. 
 
     Looks for a resource "thumbnail.png" in a dataset. 
@@ -24,18 +24,20 @@ def thumbnail_url(package):
     '''
     value = config.get('ckan.datasetthumbnail.show_thumbnail', False)
     show_thumbnail = toolkit.asbool(value)
-    thumbnail_width = config.get('ckan.datasetthumbnail.thumbnail_width', 140)
-    thumbnail_height = config.get('ckan.datasetthumbnail.thumbnail_height', thumbnail_width)
 
     if not show_thumbnail:
         return None
+
+    thumbnail_width = config.get('ckan.datasetthumbnail.thumbnail_width', 140)
+    thumbnail_height = config.get('ckan.datasetthumbnail.thumbnail_height', thumbnail_width)
+
+    package = toolkit.get_action('package_show')(data_dict={'id': package_id})
 
     for resource in package['resources']:
         if resource['name'] == "thumbnail.png":
             return resource['url']
 
     #if there's no thumbnail make one and add it to the dataset
-
 
     for resource in package['resources']:
         if resource['format'] == 'JPEG':
