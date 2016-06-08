@@ -22,14 +22,21 @@ def thumbnail_url(package_id):
 
     :rtype: string
     '''
-    value = config.get('ckan.datasetthumbnail.show_thumbnail', False)
-    show_thumbnail = toolkit.asbool(value)
+    cfg_show = config.get('ckan.datasetthumbnail.show_thumbnail', False)
+    show_thumbnail = toolkit.asbool(cfg_show)
 
     if not show_thumbnail:
         return None
 
-    thumbnail_width = config.get('ckan.datasetthumbnail.thumbnail_width', 140)
-    thumbnail_height = config.get('ckan.datasetthumbnail.thumbnail_height', thumbnail_width)
+    print('\n\nPackage ID:')
+    print(package_id)
+    if package_id == None or len(package_id) == 0:
+        return '/image-icon.png'
+
+    cfg_width = config.get('ckan.datasetthumbnail.thumbnail_width', 140)
+    thumbnail_width = toolkit.asint(cfg_width)
+    cfg_height = config.get('ckan.datasetthumbnail.thumbnail_height', int(thumbnail_width * 1.415))
+    thumbnail_height = toolkit.asint(cfg_height)
 
     package = toolkit.get_action('package_show')(data_dict={'id': package_id})
 
