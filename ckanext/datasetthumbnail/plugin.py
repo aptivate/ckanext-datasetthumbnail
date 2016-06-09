@@ -2,12 +2,13 @@ import cgi
 import pylons.config as config
 import ckan.plugins as plugins
 import ckan.plugins.toolkit as toolkit
+from ckan.common import c
 import requests
 import tempfile
 from PIL import Image
 from PIL import PngImagePlugin, JpegImagePlugin
 from StringIO import StringIO
-
+import ckanext
 
 def thumbnail_url(package_id):
     '''Returns the url of a thumbnail for a dataset. 
@@ -32,52 +33,78 @@ def thumbnail_url(package_id):
     if package_id == None or len(package_id) == 0:
         return '/image-icon.png'
 
-    cfg_width = config.get('ckan.datasetthumbnail.thumbnail_width', 140)
-    thumbnail_width = toolkit.asint(cfg_width)
-    cfg_height = config.get('ckan.datasetthumbnail.thumbnail_height', int(thumbnail_width * 1.415))
-    thumbnail_height = toolkit.asint(cfg_height)
-
     package = toolkit.get_action('package_show')(data_dict={'id': package_id})
 
     for resource in package['resources']:
-        if resource['name'] == "thumbnail.png":
+        if resource['name'] == 'thumbnail.png':
             return resource['url']
 
     #if there's no thumbnail make one and add it to the dataset
+    url = None
 
-    for resource in package['resources']:
-        if resource['format'] == 'JPEG':
+    if c.user != None and len(c.user) > 0:
+        url = create_thumbnail(package_id)
 
-            response = requests.get(resource['url'], stream=True)
-            if response.status_code == 200:
-                original_fp = StringIO()  #create an in-memory file object in which to save the image
+    return url or '/image-icon.png'
 
-                for chunk in response.iter_content(1024):
-                    original_fp.write(chunk)
-                original_fp.flush()
 
-                image = Image.open(original_fp)
-                image.thumbnail((thumbnail_width, thumbnail_height))
+def create_thumbnail(package_id, resource_id=None, width=None, height=None):
+    '''Creates a thumbnail in a dataset and returns its url
 
-                thumbnail_fp = StringIO() 
-                thumbnail_fp.name = 'thumbnail.png'
-                image.save(thumbnail_fp, format='PNG')
+    :rtype: string
+    '''
 
-                thumbnail_resource = {}
-                thumbnail_resource['package_id'] = package['id']
-                thumbnail_resource['url'] = 'thumbnail.png'
-                thumbnail_resource['url_type'] = 'upload'
-                thumbnail_resource['format'] = 'png'
-                thumbnail_resource['name'] = 'thumbnail.png'
-                thumbnail_resource['upload'] = _UploadLocalFileStorage(thumbnail_fp)
+    if width == None:
+        cfg_width = config.get('ckan.datasetthumbnail.thumbnail_width', 140)
+        width = toolkit.asint(cfg_width)
 
-                created_resource = toolkit.get_action('resource_create')(data_dict=thumbnail_resource)
-                thumbnail_fp.close()
-                original_fp.close()
+    if height == None:
+        cfg_height = config.get('ckan.datasetthumbnail.thumbnail_height', int(width * 1.415))
+        height = toolkit.asint(cfg_height)
 
-                return created_resource['url']
+    package = toolkit.get_action('package_show')(data_dict={'id': package_id})
 
-    return '/image-icon.png'
+    resource = None    
+    if resource_id != None:
+        resource = toolkit.get_action('resource_show')(data_dict={'id': resource_id})        
+
+    if resource == None:
+        for pkg_resource in package['resources']:
+            if pkg_resource['format'] == 'JPEG':
+                resource = pkg_resource
+                break
+
+    if resource != None:
+        response = requests.get(resource['url'], stream=True)
+        if response.status_code == 200:
+            original_fp = StringIO()  #create an in-memory file object in which to save the image
+
+            for chunk in response.iter_content(1024):
+                original_fp.write(chunk)
+            original_fp.flush()
+
+            image = Image.open(original_fp)
+            image.thumbnail((width, height))
+
+            thumbnail_fp = StringIO() 
+            thumbnail_fp.name = 'thumbnail.png'
+            image.save(thumbnail_fp, format='PNG')
+
+            thumbnail_resource = {}
+            thumbnail_resource['package_id'] = package['id']
+            thumbnail_resource['url'] = 'thumbnail.png'
+            thumbnail_resource['url_type'] = 'upload'
+            thumbnail_resource['format'] = 'png'
+            thumbnail_resource['name'] = 'thumbnail.png'
+            thumbnail_resource['upload'] = _UploadLocalFileStorage(thumbnail_fp)
+
+            created_resource = toolkit.get_action('resource_create')(context={'ignore_auth': True}, data_dict=thumbnail_resource)
+            thumbnail_fp.close()
+            original_fp.close()
+
+            return created_resource['url']
+
+    return None
 
 
 class _UploadLocalFileStorage(cgi.FieldStorage):
@@ -91,6 +118,7 @@ class _UploadLocalFileStorage(cgi.FieldStorage):
 class DatasetthumbnailPlugin(plugins.SingletonPlugin):
     plugins.implements(plugins.IConfigurer)
     plugins.implements(plugins.ITemplateHelpers)
+    plugins.implements(plugins.IActions)
 
 
     # IConfigurer
@@ -103,4 +131,11 @@ class DatasetthumbnailPlugin(plugins.SingletonPlugin):
     def get_helpers(self):
         return {
             'thumbnail_url': thumbnail_url
+        }
+
+    #IActions
+    def get_actions(self):
+        return {
+            'create_thumbnail':
+            ckanext.datasetthumbnail.plugin.create_thumbnail,
         }
