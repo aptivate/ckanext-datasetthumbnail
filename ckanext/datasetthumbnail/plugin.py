@@ -70,7 +70,7 @@ def create_thumbnail(package_id, resource_id=None, width=None, height=None):
 
     if resource == None:
         for pkg_resource in package['resources']:
-            if pkg_resource['format'] == 'JPEG':
+            if pkg_resource['format'] == 'JPEG' or pkg_resource['format'] == 'PNG':
                 resource = pkg_resource
                 break
 
