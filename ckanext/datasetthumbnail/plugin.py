@@ -1,3 +1,4 @@
+import sys
 import cgi
 import pylons.config as config
 import ckan.plugins as plugins
@@ -66,11 +67,15 @@ def create_thumbnail(package_id, resource_id=None, width=None, height=None):
         cfg_height = config.get('ckan.datasetthumbnail.thumbnail_height', int(width * 1.415))
         height = toolkit.asint(cfg_height)
 
-    package = toolkit.get_action('package_show')(data_dict={'id': package_id})
+    package = toolkit.get_action('package_show')(
+        context={'ignore_auth': True}, 
+        data_dict={'id': package_id})
 
     resource = None    
     if resource_id != None:
-        resource = toolkit.get_action('resource_show')(data_dict={'id': resource_id})        
+        resource = toolkit.get_action('resource_show')(
+            context={'ignore_auth': True}, 
+            data_dict={'id': resource_id})        
 
     if resource == None:
         for pkg_resource in package['resources']:
@@ -87,7 +92,14 @@ def create_thumbnail(package_id, resource_id=None, width=None, height=None):
                 original_fp.write(chunk)
             original_fp.flush()
 
-            image = Image.open(original_fp)
+            image = None
+
+            try:
+                image = Image.open(original_fp)
+            except IOError:
+                #if an image can't be parsed from the response...
+                return None 
+
             image.thumbnail((width, height))
 
             thumbnail_fp = StringIO() 
