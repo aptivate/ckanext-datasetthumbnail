@@ -27,6 +27,9 @@ def thumbnail_url(package_id):
     cfg_show = config.get('ckan.datasetthumbnail.show_thumbnail', False)
     show_thumbnail = toolkit.asbool(cfg_show)
 
+    cfg_auto_generate = config.get('ckan.datasetthumbnail.auto_generate', False)
+    auto_generate = toolkit.asbool(cfg_auto_generate)
+
     if not show_thumbnail:
         return None
 
@@ -39,11 +42,12 @@ def thumbnail_url(package_id):
         if resource['name'] == 'thumbnail.png':
             return resource['url']
 
-    #if there's no thumbnail make one and add it to the dataset
+    #if there's no thumbnail then automatically generate one and add it to the dataset
     url = None
 
-    if c.user != None and len(c.user) > 0:
-        url = create_thumbnail(package_id)
+    if auto_generate:
+        if c.user != None and len(c.user) > 0:
+            url = create_thumbnail(package_id)
 
     return url or '/image-icon.png'
 
