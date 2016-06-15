@@ -58,6 +58,8 @@ def create_thumbnail(package_id, resource_id=None, width=None, height=None):
 
     :rtype: string
     '''
+    if c.user == None or len(c.user) == 0:
+        return None
 
     if width == None:
         cfg_width = config.get('ckan.datasetthumbnail.thumbnail_width', 140)
@@ -83,8 +85,19 @@ def create_thumbnail(package_id, resource_id=None, width=None, height=None):
                 resource = pkg_resource
                 break
 
+
     if resource != None:
-        response = requests.get(resource['url'], stream=True)
+
+        if resource['url_type'] == 'upload':
+
+            auth_header = None
+            if hasattr(c, 'userobj') and hasattr(c.userobj, 'apikey'):
+                auth_header = {'Authorization': c.userobj.apikey}
+
+            response = requests.get(resource['url'], headers=auth_header, stream=True)
+        else:
+            response = requests.get(resource['url'], stream=True)
+
         if response.status_code == 200:
             original_fp = StringIO()  #create an in-memory file object in which to save the image
 
