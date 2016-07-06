@@ -1,49 +1,32 @@
-.. You should enable this project on travis-ci.org and coveralls.io to make
-   these badges work. The necessary Travis and Coverage config files have been
-   generated for you.
-
-.. image:: https://travis-ci.org/aptivate/ckanext-datasetthumbnail.svg?branch=master
-    :target: https://travis-ci.org/aptivate/ckanext-datasetthumbnail
-
-.. image:: https://coveralls.io/repos/aptivate/ckanext-datasetthumbnail/badge.svg
-  :target: https://coveralls.io/r/aptivate/ckanext-datasetthumbnail
-
-.. image:: https://pypip.in/download/ckanext-datasetthumbnail/badge.svg
-    :target: https://pypi.python.org/pypi//ckanext-datasetthumbnail/
-    :alt: Downloads
-
-.. image:: https://pypip.in/version/ckanext-datasetthumbnail/badge.svg
-    :target: https://pypi.python.org/pypi/ckanext-datasetthumbnail/
-    :alt: Latest Version
-
-.. image:: https://pypip.in/py_versions/ckanext-datasetthumbnail/badge.svg
-    :target: https://pypi.python.org/pypi/ckanext-datasetthumbnail/
-    :alt: Supported Python versions
-
-.. image:: https://pypip.in/status/ckanext-datasetthumbnail/badge.svg
-    :target: https://pypi.python.org/pypi/ckanext-datasetthumbnail/
-    :alt: Development Status
-
-.. image:: https://pypip.in/license/ckanext-datasetthumbnail/badge.svg
-    :target: https://pypi.python.org/pypi/ckanext-datasetthumbnail/
-    :alt: License
-
-=============
+========================
 ckanext-datasetthumbnail
-=============
+========================
 
-.. Put a description of your extension here:
-   What does it do? What features does it have?
-   Consider including some screenshots or embedding a video!
+This CKAN extension adds support for generation and display of thumbnail
+images. The helper function ``thumbnail_url`` can be called from a template, as in this example:
+
+::
+
+    {% block thumbnail %}
+    {% set thumbnail = h.thumbnail_url(package.id) %}
+    {% if  thumbnail %}
+        <a href="{{ h.url_for(controller='package', action='read', id=package.name) }}">
+        <img class="dataset-list-thumbnail" src="{{ thumbnail }}">
+        </a>
+    {% endif %}
+    {% endblock %}
+
+* If a resource exists with the name ``thumbnail.png``, this will be used.
+* If no resource exists with this name and the logged-in user has sufficient access, the thumbnail will be generated from the first matching JPEG or PNG resource.
+* If no thumbnail exists at this point, a placeholder image will be used.
 
 
 ------------
 Requirements
 ------------
 
-For example, you might want to mention here which versions of CKAN this
-extension works with.
-
+* CKAN 2.5.2
+* Pillow 3.2.0 (with PngImagePlugin and JpegImagePlugin)
 
 ------------
 Installation
@@ -76,11 +59,23 @@ To install ckanext-datasetthumbnail:
 Config Settings
 ---------------
 
-Document any optional config settings here. For example::
+::
 
-    # The minimum number of hours to wait before re-checking a resource
-    # (optional, default: 24).
-    ckanext.datasetthumbnail.some_setting = some_default_value
+    # Show thumbnails
+    # (optional, default: False).
+    ckan.datasetthumbnail.show_thumbnail = True
+
+    # Autogenerate thumbnails
+    # (optional, default: False).
+    ckan.datasetthumbnail.auto_generate = True
+
+    # Generated thumbnail width
+    # (optional, default: 140).
+    ckan.datasetthumbnail.thumbnail_width = 140
+
+    # Generated thumbnail height
+    # (optional, default: int(width * 1.415)
+    ckan.datasetthumbnail.thumbnail_height = 140
 
 
 ------------------------
@@ -110,9 +105,9 @@ coverage installed in your virtualenv (``pip install coverage``) then run::
     nosetests --nologcapture --with-pylons=test.ini --with-coverage --cover-package=ckanext.datasetthumbnail --cover-inclusive --cover-erase --cover-tests
 
 
----------------------------------
+--------------------------------------------
 Registering ckanext-datasetthumbnail on PyPI
----------------------------------
+--------------------------------------------
 
 ckanext-datasetthumbnail should be availabe on PyPI as
 https://pypi.python.org/pypi/ckanext-datasetthumbnail. If that link doesn't work, then
@@ -139,9 +134,9 @@ steps:
        git push --tags
 
 
-----------------------------------------
+---------------------------------------------------
 Releasing a New Version of ckanext-datasetthumbnail
-----------------------------------------
+---------------------------------------------------
 
 ckanext-datasetthumbnail is availabe on PyPI as https://pypi.python.org/pypi/ckanext-datasetthumbnail.
 To publish a new version to PyPI follow these steps:
