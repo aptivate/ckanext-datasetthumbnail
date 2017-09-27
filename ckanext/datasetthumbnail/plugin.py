@@ -87,16 +87,19 @@ def create_thumbnail(package_id, resource_id=None, width=None, height=None):
 
 
     if resource != None:
-
+        headers = {}
         if resource['url_type'] == 'upload':
-
-            auth_header = None
             if hasattr(c, 'userobj') and hasattr(c.userobj, 'apikey'):
-                auth_header = {'Authorization': c.userobj.apikey}
+                headers['Authorization'] = c.userobj.apikey
 
-            response = requests.get(resource['url'], headers=auth_header, stream=True)
-        else:
-            response = requests.get(resource['url'], stream=True)
+        try:
+            response = requests.get(resource['url'], headers=headers, stream=True)
+        except requests.exceptions.RequestException:
+            # Silently fail on any request exception on the basis that it's
+            # better to have a working page with missing thumbnails than a
+            # broken one.
+            return
+
 
         if response.status_code == 200:
             original_fp = StringIO()  #create an in-memory file object in which to save the image
