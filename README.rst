@@ -1,3 +1,29 @@
+.. image:: https://travis-ci.org/aptivate/ckanext-datasetthumbnail.svg?branch=master
+    :target: https://travis-ci.org/aptivate/ckanext-datasetthumbnail
+
+.. image:: https://coveralls.io/repos/aptivate/ckanext-datasetthumbnail/badge.svg
+  :target: https://coveralls.io/r/aptivate/ckanext-datasetthumbnail
+
+.. image:: https://pypip.in/download/ckanext-datasetthumbnail/badge.svg
+    :target: https://pypi.python.org/pypi//ckanext-datasetthumbnail/
+    :alt: Downloads
+
+.. image:: https://pypip.in/version/ckanext-datasetthumbnail/badge.svg
+    :target: https://pypi.python.org/pypi/ckanext-datasetthumbnail/
+    :alt: Latest Version
+
+.. image:: https://pypip.in/py_versions/ckanext-datasetthumbnail/badge.svg
+    :target: https://pypi.python.org/pypi/ckanext-datasetthumbnail/
+    :alt: Supported Python versions
+
+.. image:: https://pypip.in/status/ckanext-datasetthumbnail/badge.svg
+    :target: https://pypi.python.org/pypi/ckanext-datasetthumbnail/
+    :alt: Development Status
+
+.. image:: https://pypip.in/license/ckanext-datasetthumbnail/badge.svg
+    :target: https://pypi.python.org/pypi/ckanext-datasetthumbnail/
+    :alt: License
+
 ========================
 ckanext-datasetthumbnail
 ========================
